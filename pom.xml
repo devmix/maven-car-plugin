@@ -25,13 +25,15 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.github.devmix.esb</groupId>
+    <groupId>com.github.devmix</groupId>
     <artifactId>maven-car-plugin</artifactId>
     <packaging>maven-plugin</packaging>
     <version>1.0.0</version>
 
     <name>Carbon Application Archive Maven Plugin</name>
-    <description>Maven plugin for building Carbon Application Archive (CAR) based on configuration of Apache Synapse</description>
+    <description>
+        Maven plugin for building Carbon Application Archive (CAR) based on configuration of Apache Synapse
+    </description>
     <url>https://github.com/devmix/maven-car-plugin</url>
 
     <issueManagement>
@@ -62,10 +64,27 @@
         </developer>
     </developers>
 
+    <distributionManagement>
+        <repository>
+            <id>ossrh</id>
+            <name>Sonatype Release Distribution Staging Repository</name>
+            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+        </repository>
+        <snapshotRepository>
+            <id>ossrh</id>
+            <name>Sonatype Snapshot Distribution Repository</name>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
+    </distributionManagement>
+
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <mavenVersion>2.2.1</mavenVersion>
-        <mavenArchiverVersion>2.6</mavenArchiverVersion>
+        <maven.version>2.2.1</maven.version>
+        <maven.annotations.version>3.4</maven.annotations.version>
+        <maven.archiver.version>2.6</maven.archiver.version>
+        <maven.compiler.version>3.3</maven.compiler.version>
+        <maven.source.version>2.4</maven.source.version>
+        <maven.javadoc.version>2.10.3</maven.javadoc.version>
     </properties>
 
     <build>
@@ -73,11 +92,37 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.3</version>
+                <version>${maven.compiler.version}</version>
                 <configuration>
                     <source>1.7</source>
                     <target>1.7</target>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>${maven.source.version}</version>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <goals>
+                            <goal>jar-no-fork</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>${maven.javadoc.version}</version>
+                <executions>
+                    <execution>
+                        <id>attach-javadocs</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
@@ -86,28 +131,28 @@
         <dependency>
             <groupId>org.apache.maven</groupId>
             <artifactId>maven-plugin-api</artifactId>
-            <version>${mavenVersion}</version>
+            <version>${maven.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.maven</groupId>
             <artifactId>maven-project</artifactId>
-            <version>${mavenVersion}</version>
+            <version>${maven.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.maven</groupId>
             <artifactId>maven-core</artifactId>
-            <version>${mavenVersion}</version>
+            <version>${maven.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.maven.plugin-tools</groupId>
             <artifactId>maven-plugin-annotations</artifactId>
-            <version>3.4</version>
+            <version>${maven.annotations.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.maven</groupId>
             <artifactId>maven-archiver</artifactId>
-            <version>${mavenArchiverVersion}</version>
+            <version>${maven.archiver.version}</version>
         </dependency>
         <dependency>
             <groupId>com.google.code.findbugs</groupId>

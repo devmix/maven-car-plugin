@@ -1,4 +1,4 @@
-# maven-car-plugin
+# maven-car-plugin [![Build Status](https://travis-ci.org/devmix/maven-car-plugin.svg?branch=master)](https://travis-ci.org/devmix/maven-car-plugin)
 
 Maven plugin for building Carbon Application Archive (CAR) based on configuration of Apache Synapse.
 
@@ -66,7 +66,3 @@ Example:
 To build a CAR run the following command:
 
 `$ mvn clean package`
-
-# Status
-
-[![Build Status](https://travis-ci.org/devmix/maven-car-plugin.svg?branch=master)](https://travis-ci.org/devmix/maven-car-plugin)

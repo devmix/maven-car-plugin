@@ -33,7 +33,7 @@
                         <!--org.apache.maven.plugins:maven-resources-plugin:resources-->
                     <!--</process-resources>-->
                     <package>
-                        com.github.devmix.esb:maven-car-plugin:car
+                        com.github.devmix:maven-car-plugin:car
                     </package>
                     <install>
                         org.apache.maven.plugins:maven-install-plugin:install
