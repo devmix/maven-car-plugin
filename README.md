@@ -66,3 +66,7 @@ Example:
 To build a CAR run the following command:
 
 `$ mvn clean package`
+
+# Status
+
+[![Build Status](https://travis-ci.org/devmix/maven-car-plugin.svg?branch=master)](https://travis-ci.org/devmix/maven-car-plugin)
