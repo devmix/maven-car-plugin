@@ -4,7 +4,7 @@ Maven plugin for building Carbon Application Archive (CAR) based on configuratio
 
 ### Project example
 
-#### Sources:
+#### Synapse config:
 
  src/main/synapse-config
  * api
@@ -16,6 +16,36 @@ Maven plugin for building Carbon Application Archive (CAR) based on configuratio
  * sequences
  * tasks
  * templates
+ 
+#### Resources of WSO2 registry :
+
+ src/main/resources
+ * _system/config
+   * config
+   * governance
+   * ...
+ * artifacts.list
+
+
+#### artifacts.list
+
+Format:
+
+```
+:<mime type 1>
+<relative path to resource 1>
+<relative path to resource 2>
+...
+
+:<mime type 2>
+...
+```
+
+Example:
+```
+:application/vnd.wso2.sequence
+ _system/governance/sequences/sequence.xml
+```
 
 #### pom.xml:
 

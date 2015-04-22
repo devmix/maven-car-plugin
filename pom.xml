@@ -50,6 +50,7 @@
     <scm>
         <url>https://github.com/devmix/maven-car-plugin</url>
         <connection>scm:git:git://github.com/devmix/maven-car-plugin.git</connection>
+        <developerConnection>scm:git:git@github.com:devmix/maven-car-plugin.git</developerConnection>
     </scm>
 
     <developers>

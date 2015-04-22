@@ -94,13 +94,21 @@ public final class XmlBuilder {
         }
 
         public Node node(final String name) {
-            final Node node = new Node(owner, name);
+            final Node node = new Node(this, name);
             nodes.add(node);
             return node;
         }
 
+        public Node parent() {
+            return owner;
+        }
+
+        public XmlBuilder builder() {
+            return XmlBuilder.this;
+        }
+
         public Content content(final String text) {
-            content = new Content(text);
+            content = new Content(text, this);
             return content;
         }
 
@@ -156,9 +164,15 @@ public final class XmlBuilder {
     public final class Content {
 
         private final String text;
+        private final Node owner;
 
-        public Content(final String text) {
+        public Content(final String text, final Node owner) {
             this.text = text;
+            this.owner = owner;
+        }
+
+        public XmlBuilder.Node parent() {
+            return owner.parent();
         }
 
         public XmlBuilder builder() {

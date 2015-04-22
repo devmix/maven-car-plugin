@@ -21,9 +21,10 @@
 
 package com.github.devmix.esb.car.plugin;
 
-import com.github.devmix.esb.car.plugin.builders.DependenciesBuilder;
+import com.github.devmix.esb.car.plugin.builders.ArtifactsListBuilder;
+import com.github.devmix.esb.car.plugin.builders.RegistryArtifactsBuilder;
+import com.github.devmix.esb.car.plugin.builders.SynapseConfigArtifactsBuilder;
 import com.github.devmix.esb.car.plugin.builders.XmlBuilder;
-import com.github.devmix.esb.car.plugin.utils.ArtifactUtils;
 import org.apache.maven.archiver.MavenArchiveConfiguration;
 import org.apache.maven.archiver.MavenArchiver;
 import org.apache.maven.execution.MavenSession;
@@ -39,7 +40,8 @@ import org.codehaus.plexus.archiver.jar.JarArchiver;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.file.*;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 /**
  * @author Sergey Grachev
@@ -56,14 +58,29 @@ public class CarMojo extends AbstractMojo {
     @Parameter(defaultValue = "${project.build.directory}", required = true)
     private String targetDir;
 
-    @Parameter(defaultValue = "${project.basedir}/src/main/synapse-config", required = true)
+    @Parameter(defaultValue = "${project.basedir}/src/main/synapse-config", required = false)
     private String synapseConfigDir;
+
+    @Parameter(defaultValue = "${project.basedir}/src/main/resources", required = false)
+    private String registryConfigDir;
 
     @Parameter(defaultValue = "${project.name}", required = true)
     private String applicationName;
 
-    @Parameter(defaultValue = "EnterpriseServiceBus", required = true)
+    @Parameter(defaultValue = Constants.SERVER_ROLE_ENTERPRISE_SERVICE_BUS, required = true)
     private String serverRole;
+
+    /**
+     * Override default behavior and create all registry resource in one artifact
+     */
+    @Parameter(defaultValue = "true")
+    private boolean registryAllInOneArtifact;
+
+    /**
+     * Name of all-in-one artifact for registry resources. See <code>registryAllInOneArtifact</code> property
+     */
+    @Parameter(defaultValue = "resources")
+    private String registryAllInOneArtifactName;
 
     @Parameter(defaultValue = "${project.name}_${project.version}", required = true)
     private String carName;
@@ -80,12 +97,29 @@ public class CarMojo extends AbstractMojo {
     @Parameter
     private MavenArchiveConfiguration archive = new MavenArchiveConfiguration();
 
-    private final DependenciesBuilder dependenciesBuilder = new DependenciesBuilder();
+    private final ArtifactsListBuilder artifactsListBuilder = new ArtifactsListBuilder();
 
     @Override
     public void execute() throws MojoFailureException {
         try {
-            createArtifacts();
+            SynapseConfigArtifactsBuilder.newInstance()
+                    .artifactsList(artifactsListBuilder)
+                    .outputDirectory(outputDirectory)
+                    .configDir(synapseConfigDir)
+                    .serverRole(serverRole)
+                    .version(version)
+                    .build();
+
+            RegistryArtifactsBuilder.newInstance()
+                    .artifactsList(artifactsListBuilder)
+                    .outputDirectory(outputDirectory)
+                    .configDir(registryConfigDir)
+                    .serverRole(serverRole)
+                    .version(version)
+                    .allInOne(registryAllInOneArtifact)
+                    .allInOneName(registryAllInOneArtifactName)
+                    .build();
+
             createArtifactsXml();
             createCar();
         } catch (final Exception e) {
@@ -114,7 +148,7 @@ public class CarMojo extends AbstractMojo {
                 .attr("version", version)
                 .attr("type", "carbon/application").node();
 
-        for (final DependenciesBuilder.Dependency dependency : dependenciesBuilder.ordered()) {
+        for (final ArtifactsListBuilder.Dependency dependency : artifactsListBuilder.ordered()) {
             artifactNode.node("dependency")
                     .attr("artifact", dependency.artifactName)
                     .attr("version", dependency.version)
@@ -126,58 +160,5 @@ public class CarMojo extends AbstractMojo {
         try (FileOutputStream fis = new FileOutputStream(artifactsFileName.toFile())) {
             fis.write(artifactsXml.asString().getBytes());
         }
-    }
-
-    private void createArtifacts() throws Exception {
-        Files.createDirectories(Paths.get(outputDirectory));
-
-        try (DirectoryStream<Path> synConfStream = Files.newDirectoryStream(Paths.get(synapseConfigDir))) {
-            for (final Path path : synConfStream) {
-                final String type = path.getFileName().toString();
-                createArtifactsOf(type, path);
-            }
-        }
-    }
-
-    private void createArtifactsOf(final String type, final Path fromPath) throws Exception {
-        if (!ArtifactUtils.isSupported(type)) {
-            throw new MojoFailureException("Unsupported type of artifact - " + type);
-        }
-
-        try (DirectoryStream<Path> artifactStream = Files.newDirectoryStream(fromPath)) {
-            for (final Path file : artifactStream) {
-                createArtifactOf(type, file);
-            }
-        }
-    }
-
-    private void createArtifactOf(final String type, final Path fromFile) throws Exception {
-        final String artifactName = ArtifactUtils.removeFileExtension(fromFile.getFileName().toString());
-        final String artifactFileName = artifactName + "-" + version + ".xml";
-        final Path artifactDir = Paths.get(outputDirectory, artifactName + "_" + version);
-        final Path artifactFile = Paths.get(artifactDir.toString(), artifactFileName);
-        final Path artifactMetaFile = Paths.get(artifactDir.toString(), "artifact.xml");
-        if (!Files.exists(artifactDir)) {
-            Files.createDirectory(artifactDir);
-        }
-
-        Files.copy(fromFile, artifactFile, StandardCopyOption.REPLACE_EXISTING);
-
-        try {
-            final String xml = new XmlBuilder().node("artifact")
-                    .attr("name", artifactName)
-                    .attr("version", version)
-                    .attr("type", ArtifactUtils.synapseTypeOf(type))
-                    .attr("serverRole", serverRole)
-                    .node("file").content(artifactFileName)
-                    .builder().asString();
-            try (FileOutputStream fis = new FileOutputStream(artifactMetaFile.toFile())) {
-                fis.write(xml.getBytes());
-            }
-        } catch (final XmlBuilder.XmlBuildException e) {
-            throw new MojoFailureException("Can't create artifact.xml", e);
-        }
-
-        dependenciesBuilder.add(artifactName, version, serverRole, true, type);
     }
 }

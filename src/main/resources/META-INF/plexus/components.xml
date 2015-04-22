@@ -29,9 +29,9 @@
             </implementation>
             <configuration>
                 <phases>
-                    <process-resources>
-                        org.apache.maven.plugins:maven-resources-plugin:resources
-                    </process-resources>
+                    <!--<process-resources>-->
+                        <!--org.apache.maven.plugins:maven-resources-plugin:resources-->
+                    <!--</process-resources>-->
                     <package>
                         com.github.devmix.esb:maven-car-plugin:car
                     </package>

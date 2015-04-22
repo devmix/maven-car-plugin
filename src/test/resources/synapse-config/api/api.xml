@@ -1,0 +1,7 @@
+<api xmlns="http://ws.apache.org/ns/synapse" context="/api" name="api">
+    <resource methods="GET">
+        <inSequence/>
+        <outSequence/>
+        <faultSequence/>
+    </resource>
+</api>

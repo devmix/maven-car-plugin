@@ -1,0 +1,13 @@
+<proxy xmlns="http://ws.apache.org/ns/synapse"
+       name="proxy" transports="https,http" statistics="disable" trace="disable"
+       startOnLoad="true">
+    <target>
+        <outSequence>
+            <send/>
+        </outSequence>
+        <endpoint
+                name="endpoint_urn_uuid_97d36524-e6f5-4f9e-997c-461fd4781fcb">
+            <address uri="http://localhost"/>
+        </endpoint>
+    </target>
+</proxy>

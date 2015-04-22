@@ -21,6 +21,8 @@
 
 package com.github.devmix.esb.car.plugin.utils;
 
+import org.apache.maven.shared.utils.StringUtils;
+
 import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
@@ -35,11 +37,11 @@ public final class ArtifactUtils {
     static {
         // --- 1
 
-        // registry/resource
+        TYPE_TO_DESCRIPTOR.put("registry", new Descriptor(100, "rgr", "registry/resource"));
 
         // --- 2
 
-        TYPE_TO_DESCRIPTOR.put("local-entries", new Descriptor(0, "let", "synapse/local-entry"));
+        TYPE_TO_DESCRIPTOR.put("local-entries", new Descriptor(200, "let", "synapse/local-entry"));
 
         // --- 3
 
@@ -47,7 +49,7 @@ public final class ArtifactUtils {
 
         // --- 4
 
-        TYPE_TO_DESCRIPTOR.put("message-stores", new Descriptor(1, "mst", "synapse/message-store"));
+        TYPE_TO_DESCRIPTOR.put("message-stores", new Descriptor(400, "mst", "synapse/message-store"));
 
         // --- 5
 
@@ -58,21 +60,21 @@ public final class ArtifactUtils {
         // lib/library/bundle
         // service/dataservice
         // cep/bucket
-        TYPE_TO_DESCRIPTOR.put("proxy-services", new Descriptor(3, "prx", "synapse/proxy-service"));
+        TYPE_TO_DESCRIPTOR.put("proxy-services", new Descriptor(500, "prx", "synapse/proxy-service"));
         // carbon/application
         // lib/dataservice/validator
-        TYPE_TO_DESCRIPTOR.put("endpoints", new Descriptor(6, "ept", "synapse/endpoint"));
+        TYPE_TO_DESCRIPTOR.put("endpoints", new Descriptor(501, "ept", "synapse/endpoint"));
         // web/application
         // lib/carbon/ui
         // service/axis2
-        TYPE_TO_DESCRIPTOR.put("sequences", new Descriptor(5, "seq", "synapse/sequence"));
+        TYPE_TO_DESCRIPTOR.put("sequences", new Descriptor(502, "seq", "synapse/sequence"));
         // synapse/configuration
-        TYPE_TO_DESCRIPTOR.put("api", new Descriptor(4, "api", "synapse/api"));
-        TYPE_TO_DESCRIPTOR.put("templates", new Descriptor(7, "tpl", "synapse/template"));
+        TYPE_TO_DESCRIPTOR.put("api", new Descriptor(504, "api", "synapse/api"));
+        TYPE_TO_DESCRIPTOR.put("templates", new Descriptor(503, "tpl", "synapse/template"));
         // synapse/sequenceTemplate
         // synapse/endpointTemplate
         // synapse/event-source
-        TYPE_TO_DESCRIPTOR.put("message-processors", new Descriptor(2, "mps", "synapse/message-processors"));
+        TYPE_TO_DESCRIPTOR.put("message-processors", new Descriptor(504, "mps", "synapse/message-processors"));
         // synapse/priority-executor
         // wso2/gadget
         // lib/registry/handlers
@@ -81,7 +83,19 @@ public final class ArtifactUtils {
         // jaggery/app
 
         // --- 6
-        TYPE_TO_DESCRIPTOR.put("tasks", new Descriptor(8, "tsk", "synapse/task"));
+
+        TYPE_TO_DESCRIPTOR.put("tasks", new Descriptor(600, "tsk", "synapse/task"));
+    }
+
+    private static final Map<String, String> EXT_TO_MEDIA_TYPE = new HashMap<>(9);
+
+    static {
+        EXT_TO_MEDIA_TYPE.put("js", "application/javascript");
+        EXT_TO_MEDIA_TYPE.put("css", "text/css");
+        EXT_TO_MEDIA_TYPE.put("html", "text/html");
+        EXT_TO_MEDIA_TYPE.put("sql", "");
+        EXT_TO_MEDIA_TYPE.put("xsl", "application/xsl+xml");
+        EXT_TO_MEDIA_TYPE.put("xslt", "application/xslt+xml");
     }
 
     private ArtifactUtils() {
@@ -95,6 +109,11 @@ public final class ArtifactUtils {
         return i == -1 ? fileName : fileName.substring(0, i);
     }
 
+    public static String getExtension(final String fileName) {
+        final int dot = fileName.lastIndexOf(".");
+        return fileName.substring(dot + 1);
+    }
+
     @Nullable
     public static String synapseTypeOf(final String artifactType) {
         return isSupported(artifactType) ? TYPE_TO_DESCRIPTOR.get(artifactType).synapseType : null;
@@ -106,6 +125,15 @@ public final class ArtifactUtils {
 
     public static boolean isSupported(final String artifactType) {
         return TYPE_TO_DESCRIPTOR.containsKey(artifactType);
+    }
+
+    @Nullable
+    public static String mediaTypeOf(final String file) {
+        final String ext = getExtension(file);
+        if (StringUtils.isBlank(ext)) {
+            return null;
+        }
+        return EXT_TO_MEDIA_TYPE.get(ext.toLowerCase());
     }
 
     private static final class Descriptor {

@@ -31,7 +31,7 @@ import java.util.List;
 /**
  * @author Sergey Grachev
  */
-public final class DependenciesBuilder {
+public final class ArtifactsListBuilder {
 
     public static final Comparator<Dependency> DEPENDENCY_COMPARATOR = new Comparator<Dependency>() {
         @Override
@@ -52,6 +52,11 @@ public final class DependenciesBuilder {
         return Collections.unmodifiableList(list);
     }
 
+    @Override
+    public String toString() {
+        return "ArtifactsListBuilder{" + list + '}';
+    }
+
     public static final class Dependency {
 
         public final String artifactName;
@@ -67,6 +72,17 @@ public final class DependenciesBuilder {
             this.serverRole = serverRole;
             this.include = include;
             this.priority = priority;
+        }
+
+        @Override
+        public String toString() {
+            return "Dependency{" +
+                    "artifactName='" + artifactName + '\'' +
+                    ", version='" + version + '\'' +
+                    ", serverRole='" + serverRole + '\'' +
+                    ", include=" + include +
+                    ", priority=" + priority +
+                    '}';
         }
     }
 }
