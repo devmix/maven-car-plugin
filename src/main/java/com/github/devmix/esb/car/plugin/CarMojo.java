@@ -40,6 +40,7 @@ import org.codehaus.plexus.archiver.jar.JarArchiver;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -102,6 +103,8 @@ public class CarMojo extends AbstractMojo {
     @Override
     public void execute() throws MojoFailureException {
         try {
+            Files.createDirectories(Paths.get(outputDirectory));
+
             SynapseConfigArtifactsBuilder.newInstance()
                     .artifactsList(artifactsListBuilder)
                     .outputDirectory(outputDirectory)

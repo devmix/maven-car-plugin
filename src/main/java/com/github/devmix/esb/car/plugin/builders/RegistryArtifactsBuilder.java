@@ -36,6 +36,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
+ * Not thread-safe
+ *
  * @author Sergey Grachev
  */
 public final class RegistryArtifactsBuilder extends AbstractArtifactsBuilder<RegistryArtifactsBuilder> {
@@ -66,6 +68,11 @@ public final class RegistryArtifactsBuilder extends AbstractArtifactsBuilder<Reg
 
     public void build() throws MojoFailureException {
         check();
+
+        if (!Files.exists(Paths.get(configDir))) {
+            return;
+        }
+
         try {
             this.mediaTypes = readArtifactsTypesList();
             if (allInOne) {
@@ -103,10 +110,10 @@ public final class RegistryArtifactsBuilder extends AbstractArtifactsBuilder<Reg
 
     private void createArtifact(final Path fromFile) throws IOException, MojoFailureException {
         final String fileName = fromFile.getFileName().toString();
-        final String registryFile = fromFile.toString().substring(configDir.length() + 1).replaceAll("\\\\", "/");
-        final String name = ArtifactUtils.removeFileExtension(fromFile.getFileName().toString());
+        final String registryFile = registryFileOf(fromFile);
+        final String name = ArtifactUtils.removeFileExtension(fileName);
         final Path dir = Paths.get(outputDirectory, name + "_" + version);
-        final Path resourcesDir = Paths.get(dir.toString(), "resources");
+        final Path resourcesDir = resourcesDirOf(dir);
         final Path file = Paths.get(resourcesDir.toString(), fileName);
 
         if (!Files.exists(resourcesDir)) {
@@ -122,7 +129,7 @@ public final class RegistryArtifactsBuilder extends AbstractArtifactsBuilder<Reg
             if (StringUtils.isBlank(mediaType)) {
                 throw new MojoFailureException("Unknown media type for " + registryFile);
             }
-            final String registryPath = fromFile.getParent().toString().substring(configDir.length() + 1).replaceAll("\\\\", "/");
+            final String registryPath = registryPathOf(fromFile);
             final Path registryInfoFile = Paths.get(dir.toString(), REGISTRY_INFO_XML);
             final String xml = new XmlBuilder().node("resources").node("item")
                     .node("file").content(fileName).parent()
@@ -141,54 +148,57 @@ public final class RegistryArtifactsBuilder extends AbstractArtifactsBuilder<Reg
 
     private void createAllInOneRegistryArtifacts() throws IOException, MojoFailureException {
         final Path dir = Paths.get(outputDirectory, allInOneName + "_" + version);
-        final Path resourcesDir = Paths.get(dir.toString(), "resources");
         final Path registryInfoXml = Paths.get(dir.toString(), REGISTRY_INFO_XML);
+
+        boolean hasArtifacts = false;
+        final XmlBuilder.Node registryInfoNode = new XmlBuilder().node("resources");
+        try (DirectoryStream<Path> confStream = Files.newDirectoryStream(Paths.get(configDir))) {
+            for (final Path path : confStream) {
+                if (Files.isDirectory(path)) {
+                    hasArtifacts |= createAllInOneArtifacts(path, registryInfoNode);
+                }
+            }
+        }
+
+        if (hasArtifacts) {
+            createArtifactXml(allInOneName, dir);
+
+            try (FileOutputStream fis = new FileOutputStream(registryInfoXml.toFile())) {
+                try {
+                    fis.write(registryInfoNode.builder().asString().getBytes());
+                } catch (final XmlBuilder.XmlBuildException e) {
+                    throw new MojoFailureException("Can't create " + REGISTRY_INFO_XML, e);
+                }
+            }
+
+            artifactsList.add(allInOneName, version, serverRole, true, RESOURCES_TYPE);
+        }
+    }
+
+    private boolean createAllInOneArtifacts(final Path root, final XmlBuilder.Node registryInfoNode) throws IOException, MojoFailureException {
+        boolean hasArtifacts = false;
+        try (DirectoryStream<Path> artifactsStream = Files.newDirectoryStream(root)) {
+            for (final Path path : artifactsStream) {
+                if (Files.isDirectory(path)) {
+                    hasArtifacts |= createAllInOneArtifacts(path, registryInfoNode);
+                } else {
+                    hasArtifacts |= createAllInOneArtifact(path, registryInfoNode);
+                }
+            }
+        }
+        return hasArtifacts;
+    }
+
+    private boolean createAllInOneArtifact(final Path fromFile, final XmlBuilder.Node registryInfoNode) throws IOException, MojoFailureException {
+        final String fileName = fromFile.getFileName().toString();
+        final String registryFile = registryFileOf(fromFile);
+        final Path dir = Paths.get(outputDirectory, allInOneName + "_" + version);
+        final Path resourcesDir = resourcesDirOf(dir);
+        final Path file = Paths.get(resourcesDir.toString(), fileName);
 
         if (!Files.exists(resourcesDir)) {
             Files.createDirectories(resourcesDir);
         }
-
-        createArtifactXml(allInOneName, dir);
-
-        final XmlBuilder.Node registryInfoNode = new XmlBuilder().node("resources");
-
-        try (DirectoryStream<Path> confStream = Files.newDirectoryStream(Paths.get(configDir))) {
-            for (final Path path : confStream) {
-                if (Files.isDirectory(path)) {
-                    createAllInOneArtifacts(path, registryInfoNode);
-                }
-            }
-        }
-
-        try (FileOutputStream fis = new FileOutputStream(registryInfoXml.toFile())) {
-            try {
-                fis.write(registryInfoNode.builder().asString().getBytes());
-            } catch (final XmlBuilder.XmlBuildException e) {
-                throw new MojoFailureException("Can't create " + REGISTRY_INFO_XML, e);
-            }
-        }
-
-        artifactsList.add(allInOneName, version, serverRole, true, RESOURCES_TYPE);
-    }
-
-    private void createAllInOneArtifacts(final Path root, final XmlBuilder.Node registryInfoNode) throws IOException, MojoFailureException {
-        try (DirectoryStream<Path> artifactsStream = Files.newDirectoryStream(root)) {
-            for (final Path path : artifactsStream) {
-                if (Files.isDirectory(path)) {
-                    createAllInOneArtifacts(path, registryInfoNode);
-                } else {
-                    createAllInOneArtifact(path, registryInfoNode);
-                }
-            }
-        }
-    }
-
-    private void createAllInOneArtifact(final Path fromFile, final XmlBuilder.Node registryInfoNode) throws IOException, MojoFailureException {
-        final String fileName = fromFile.getFileName().toString();
-        final String registryFile = fromFile.toString().substring(configDir.length() + 1).replaceAll("\\\\", "/");
-        final Path dir = Paths.get(outputDirectory, allInOneName + "_" + version);
-        final Path resourcesDir = Paths.get(dir.toString(), "resources");
-        final Path file = Paths.get(resourcesDir.toString(), fileName);
 
         Files.copy(fromFile, file, StandardCopyOption.REPLACE_EXISTING);
 
@@ -197,12 +207,14 @@ public final class RegistryArtifactsBuilder extends AbstractArtifactsBuilder<Reg
             throw new MojoFailureException("Unknown media type for " + registryFile);
         }
 
-        final String registryPath = fromFile.getParent().toString().substring(configDir.length() + 1).replaceAll("\\\\", "/");
+        final String registryPath = registryPathOf(fromFile);
 
         registryInfoNode.node("item")
                 .node("file").content(fileName).parent()
                 .node("path").content("/" + registryPath).parent()
                 .node("mediaType").content(mediaType);
+
+        return true;
     }
 
     private void createArtifactXml(final String name, final Path dir) throws IOException, MojoFailureException {
@@ -224,7 +236,7 @@ public final class RegistryArtifactsBuilder extends AbstractArtifactsBuilder<Reg
     }
 
     private Map<String, String> readArtifactsTypesList() throws IOException {
-        final Path file =  Paths.get(configDir, "artifacts.list");
+        final Path file = Paths.get(configDir, "artifacts.list");
         if (!Files.exists(file)) {
             return Collections.emptyMap();
         }
@@ -258,5 +270,17 @@ public final class RegistryArtifactsBuilder extends AbstractArtifactsBuilder<Reg
             return predefined;
         }
         return ArtifactUtils.mediaTypeOf(registryFile);
+    }
+
+    private String registryFileOf(final Path fromFile) {
+        return fromFile.toString().substring(configDir.length() + 1).replaceAll("\\\\", "/");
+    }
+
+    private String registryPathOf(final Path fromFile) {
+        return registryFileOf(fromFile.getParent());
+    }
+
+    private Path resourcesDirOf(final Path dir) {
+        return Paths.get(dir.toString(), "resources");
     }
 }

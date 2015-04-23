@@ -66,7 +66,7 @@ abstract class AbstractArtifactsBuilder<B> {
             throw new MojoFailureException("outputDirectory is empty");
         }
         if (StringUtils.isBlank(configDir)) {
-            throw new MojoFailureException("synapseConfigDir is empty");
+            throw new MojoFailureException("configDir is empty");
         }
         if (StringUtils.isBlank(serverRole)) {
             throw new MojoFailureException("serverRole is empty");

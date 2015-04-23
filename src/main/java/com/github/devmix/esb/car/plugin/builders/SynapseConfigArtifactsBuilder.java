@@ -50,9 +50,13 @@ public final class SynapseConfigArtifactsBuilder extends AbstractArtifactsBuilde
     }
 
     private void createArtifacts() throws IOException, MojoFailureException {
-        Files.createDirectories(Paths.get(outputDirectory));
+        final Path sourcesDir = Paths.get(configDir);
+        if (!Files.exists(sourcesDir)) {
+            return;
+        }
 
-        try (DirectoryStream<Path> confStream = Files.newDirectoryStream(Paths.get(configDir))) {
+        Files.createDirectories(Paths.get(outputDirectory));
+        try (DirectoryStream<Path> confStream = Files.newDirectoryStream(sourcesDir)) {
             for (final Path path : confStream) {
                 final String type = path.getFileName().toString();
                 createArtifactsOf(type, path);
