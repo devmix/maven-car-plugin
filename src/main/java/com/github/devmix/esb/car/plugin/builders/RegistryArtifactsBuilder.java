@@ -203,9 +203,6 @@ public final class RegistryArtifactsBuilder extends AbstractArtifactsBuilder<Reg
         Files.copy(fromFile, file, StandardCopyOption.REPLACE_EXISTING);
 
         final String mediaType = detectMediaType(registryFile);
-        if (StringUtils.isBlank(mediaType)) {
-            throw new MojoFailureException("Unknown media type for " + registryFile);
-        }
 
         final String registryPath = registryPathOf(fromFile);
 

@@ -20,14 +20,14 @@ Maven plugin for building Carbon Application Archive (CAR) based on configuratio
 #### Resources of WSO2 registry :
 
  src/main/resources
- * _system/config
+ * _system
    * config
    * governance
    * ...
  * artifacts.list
 
 
-#### artifacts.list
+#### File artifacts.list
 
 Format:
 
