@@ -96,6 +96,7 @@ public final class ArtifactUtils {
         EXT_TO_MEDIA_TYPE.put("sql", "");
         EXT_TO_MEDIA_TYPE.put("xsl", "application/xsl+xml");
         EXT_TO_MEDIA_TYPE.put("xslt", "application/xslt+xml");
+        EXT_TO_MEDIA_TYPE.put("groovy", "text/x-groovy");
     }
 
     private ArtifactUtils() {
