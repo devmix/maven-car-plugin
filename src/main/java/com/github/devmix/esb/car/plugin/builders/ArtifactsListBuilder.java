@@ -21,8 +21,6 @@
 
 package com.github.devmix.esb.car.plugin.builders;
 
-import com.github.devmix.esb.car.plugin.utils.ArtifactUtils;
-
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedList;
@@ -43,8 +41,8 @@ public final class ArtifactsListBuilder {
     private final List<Dependency> list = new LinkedList<>();
 
     public void add(final String artifactName, final String version, final String serverRole, final boolean include,
-                    final String type) {
-        list.add(new Dependency(artifactName, version, serverRole, include, ArtifactUtils.priorityOf(type)));
+                    final int priority) {
+        list.add(new Dependency(artifactName, version, serverRole, include, priority));
     }
 
     public List<Dependency> ordered() {

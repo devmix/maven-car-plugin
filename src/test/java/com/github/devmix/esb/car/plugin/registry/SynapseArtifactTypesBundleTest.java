@@ -19,29 +19,29 @@
  * under the License.
  */
 
-package com.github.devmix.esb.car.plugin.builders;
+package com.github.devmix.esb.car.plugin.registry;
 
-import com.github.devmix.esb.car.plugin.Constants;
-import org.apache.maven.plugin.MojoFailureException;
+import org.junit.Test;
+
+import static org.fest.assertions.api.Assertions.assertThat;
 
 /**
  * @author Sergey Grachev
  */
-public final class SynapseConfigArtifactsBuilderTest {
+public class SynapseArtifactTypesBundleTest {
 
-    public static void main(String[] args) throws MojoFailureException {
-        final ArtifactsListBuilder artifactsListBuilder = new ArtifactsListBuilder();
-        final String configDir = SynapseConfigArtifactsBuilderTest.class.getResource("/synapse-config")
-                .getFile().substring(1);
+    @Test
+    public void testYaml() {
+        final SynapseArtifactTypesBundle bundle = new SynapseArtifactTypesBundle()
+                .putTypes(this.getClass().getResource("/synapse-artifact-types.yaml"));
 
-        SynapseConfigArtifactsBuilder.newInstance()
-                .artifactsList(artifactsListBuilder)
-                .outputDirectory("F:\\wso2\\maven-car-plugin\\out")
-                .configDir(configDir)
-                .serverRole(Constants.SERVER_ROLE_ENTERPRISE_SERVICE_BUS)
-                .version("1.0.0")
-                .build();
+        assertThat(bundle.size()).isEqualTo(10);
+        assertType(bundle.of("registry"), 100, "registry/resource");
+        assertType(bundle.of("local-entries"), 200, "synapse/local-entry");
+    }
 
-        System.out.println(artifactsListBuilder);
+    private void assertType(final SynapseArtifactTypesBundle.Meta meta, final int priority, final String synapseType) {
+        assertThat(meta.getPriority()).isEqualTo(priority);
+        assertThat(meta.getType()).isEqualTo(synapseType);
     }
 }

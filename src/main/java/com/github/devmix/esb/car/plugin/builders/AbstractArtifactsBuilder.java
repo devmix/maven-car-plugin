@@ -21,6 +21,7 @@
 
 package com.github.devmix.esb.car.plugin.builders;
 
+import com.github.devmix.esb.car.plugin.registry.SynapseArtifactTypesBundle;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.shared.utils.StringUtils;
 
@@ -35,6 +36,7 @@ abstract class AbstractArtifactsBuilder<B> {
     protected String configDir;
     protected String serverRole;
     protected String version;
+    protected SynapseArtifactTypesBundle artifactTypes;
 
     public B artifactsList(final ArtifactsListBuilder artifactsList) {
         this.artifactsList = artifactsList;
@@ -58,6 +60,11 @@ abstract class AbstractArtifactsBuilder<B> {
 
     public B version(final String version) {
         this.version = version;
+        return (B) this;
+    }
+
+    public B artifactTypes(final SynapseArtifactTypesBundle artifactTypes) {
+        this.artifactTypes = artifactTypes;
         return (B) this;
     }
 

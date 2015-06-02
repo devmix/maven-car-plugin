@@ -21,7 +21,7 @@
 
 package com.github.devmix.esb.car.plugin.builders;
 
-import com.github.devmix.esb.car.plugin.utils.ArtifactUtils;
+import com.github.devmix.esb.car.plugin.utils.CommonUtils;
 import org.apache.maven.plugin.MojoFailureException;
 
 import java.io.FileOutputStream;
@@ -65,7 +65,7 @@ public final class SynapseConfigArtifactsBuilder extends AbstractArtifactsBuilde
     }
 
     private void createArtifactsOf(final String type, final Path fromPath) throws IOException, MojoFailureException {
-        if (!ArtifactUtils.isSupported(type)) {
+        if (artifactTypes.isNotSupported(type)) {
             throw new MojoFailureException("Unsupported type of artifact - " + type);
         }
 
@@ -77,8 +77,10 @@ public final class SynapseConfigArtifactsBuilder extends AbstractArtifactsBuilde
     }
 
     private void createArtifactOf(final String type, final Path fromFile) throws IOException, MojoFailureException {
-        final String artifactName = ArtifactUtils.removeFileExtension(fromFile.getFileName().toString());
-        final String artifactFileName = artifactName + "-" + version + ".xml";
+        final String fileName = fromFile.getFileName().toString();
+        final String artifactExt = CommonUtils.extensionOf(fileName);
+        final String artifactName = CommonUtils.removeFileExtension(fileName);
+        final String artifactFileName = artifactName + "-" + version + "." + artifactExt;
         final Path artifactDir = Paths.get(outputDirectory, artifactName + "_" + version);
         final Path artifactFile = Paths.get(artifactDir.toString(), artifactFileName);
         final Path artifactMetaFile = Paths.get(artifactDir.toString(), "artifact.xml");
@@ -92,7 +94,7 @@ public final class SynapseConfigArtifactsBuilder extends AbstractArtifactsBuilde
             final String xml = new XmlBuilder().node("artifact")
                     .attr("name", artifactName)
                     .attr("version", version)
-                    .attr("type", ArtifactUtils.synapseTypeOf(type))
+                    .attr("type", artifactTypes.of(type).getType())
                     .attr("serverRole", serverRole)
                     .node("file").content(artifactFileName)
                     .builder().asString();
@@ -103,6 +105,6 @@ public final class SynapseConfigArtifactsBuilder extends AbstractArtifactsBuilde
             throw new MojoFailureException("Can't create artifact.xml", e);
         }
 
-        artifactsList.add(artifactName, version, serverRole, true, type);
+        artifactsList.add(artifactName, version, serverRole, true, artifactTypes.of(type).getPriority());
     }
 }

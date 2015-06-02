@@ -25,6 +25,8 @@ import com.github.devmix.esb.car.plugin.builders.ArtifactsListBuilder;
 import com.github.devmix.esb.car.plugin.builders.RegistryArtifactsBuilder;
 import com.github.devmix.esb.car.plugin.builders.SynapseConfigArtifactsBuilder;
 import com.github.devmix.esb.car.plugin.builders.XmlBuilder;
+import com.github.devmix.esb.car.plugin.registry.RegistryMediaTypesBundle;
+import com.github.devmix.esb.car.plugin.registry.SynapseArtifactTypesBundle;
 import org.apache.maven.archiver.MavenArchiveConfiguration;
 import org.apache.maven.archiver.MavenArchiver;
 import org.apache.maven.execution.MavenSession;
@@ -35,6 +37,7 @@ import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.shared.utils.StringUtils;
 import org.codehaus.plexus.archiver.jar.JarArchiver;
 
 import java.io.File;
@@ -62,8 +65,14 @@ public class CarMojo extends AbstractMojo {
     @Parameter(defaultValue = "${project.basedir}/src/main/synapse-config", required = false)
     private String synapseConfigDir;
 
+    @Parameter(required = false)
+    private String synapseArtifactTypesFile;
+
     @Parameter(defaultValue = "${project.basedir}/src/main/resources", required = false)
     private String registryConfigDir;
+
+    @Parameter(required = false)
+    private String registryMediaTypesFile;
 
     @Parameter(defaultValue = "${project.name}", required = true)
     private String applicationName;
@@ -102,8 +111,12 @@ public class CarMojo extends AbstractMojo {
 
     @Override
     public void execute() throws MojoFailureException {
+
         try {
             Files.createDirectories(Paths.get(outputDirectory));
+
+            final RegistryMediaTypesBundle mediaTypesBundle = createRegistryMediaTypesBundle();
+            final SynapseArtifactTypesBundle artifactTypesBundle = createSynapseArtifactTypesBundle();
 
             SynapseConfigArtifactsBuilder.newInstance()
                     .artifactsList(artifactsListBuilder)
@@ -111,6 +124,7 @@ public class CarMojo extends AbstractMojo {
                     .configDir(synapseConfigDir)
                     .serverRole(serverRole)
                     .version(version)
+                    .artifactTypes(artifactTypesBundle)
                     .build();
 
             RegistryArtifactsBuilder.newInstance()
@@ -121,6 +135,8 @@ public class CarMojo extends AbstractMojo {
                     .version(version)
                     .allInOne(registryAllInOneArtifact)
                     .allInOneName(registryAllInOneArtifactName)
+                    .mediaTypes(mediaTypesBundle)
+                    .artifactTypes(artifactTypesBundle)
                     .build();
 
             createArtifactsXml();
@@ -128,6 +144,28 @@ public class CarMojo extends AbstractMojo {
         } catch (final Exception e) {
             throw new MojoFailureException(e.getMessage(), e);
         }
+    }
+
+    private SynapseArtifactTypesBundle createSynapseArtifactTypesBundle() {
+        final SynapseArtifactTypesBundle bundle = new SynapseArtifactTypesBundle()
+                .putTypes(this.getClass().getResource("/synapse-artifact-types.yaml"));
+
+        if (StringUtils.isNotBlank(synapseArtifactTypesFile)) {
+            bundle.putTypes(synapseArtifactTypesFile);
+        }
+
+        return bundle;
+    }
+
+    private RegistryMediaTypesBundle createRegistryMediaTypesBundle() {
+        final RegistryMediaTypesBundle bundle = new RegistryMediaTypesBundle()
+                .putTypes(this.getClass().getResource("/registry-media-types.yaml"));
+
+        if (StringUtils.isNotBlank(registryMediaTypesFile)) {
+            bundle.putTypes(registryMediaTypesFile);
+        }
+
+        return bundle;
     }
 
     private void createCar() throws MojoFailureException {

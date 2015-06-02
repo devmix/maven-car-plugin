@@ -21,7 +21,8 @@
 
 package com.github.devmix.esb.car.plugin.builders;
 
-import com.github.devmix.esb.car.plugin.utils.ArtifactUtils;
+import com.github.devmix.esb.car.plugin.registry.RegistryMediaTypesBundle;
+import com.github.devmix.esb.car.plugin.utils.CommonUtils;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.shared.utils.StringUtils;
 
@@ -47,7 +48,8 @@ public final class RegistryArtifactsBuilder extends AbstractArtifactsBuilder<Reg
 
     private boolean allInOne;
     private String allInOneName;
-    private Map<String, String> mediaTypes;
+    private Map<String, String> artifactsMediaTypes;
+    private RegistryMediaTypesBundle mediaTypes;
 
     private RegistryArtifactsBuilder() {
     }
@@ -66,6 +68,11 @@ public final class RegistryArtifactsBuilder extends AbstractArtifactsBuilder<Reg
         return this;
     }
 
+    public RegistryArtifactsBuilder mediaTypes(final RegistryMediaTypesBundle mediaTypes) {
+        this.mediaTypes = mediaTypes;
+        return this;
+    }
+
     public void build() throws MojoFailureException {
         check();
 
@@ -74,7 +81,7 @@ public final class RegistryArtifactsBuilder extends AbstractArtifactsBuilder<Reg
         }
 
         try {
-            this.mediaTypes = readArtifactsTypesList();
+            this.artifactsMediaTypes = readArtifactsTypesList();
             if (allInOne) {
                 createAllInOneRegistryArtifacts();
             } else {
@@ -111,7 +118,7 @@ public final class RegistryArtifactsBuilder extends AbstractArtifactsBuilder<Reg
     private void createArtifact(final Path fromFile) throws IOException, MojoFailureException {
         final String fileName = fromFile.getFileName().toString();
         final String registryFile = registryFileOf(fromFile);
-        final String name = ArtifactUtils.removeFileExtension(fileName);
+        final String name = CommonUtils.removeFileExtension(fileName);
         final Path dir = Paths.get(outputDirectory, name + "_" + version);
         final Path resourcesDir = resourcesDirOf(dir);
         final Path file = Paths.get(resourcesDir.toString(), fileName);
@@ -143,7 +150,7 @@ public final class RegistryArtifactsBuilder extends AbstractArtifactsBuilder<Reg
             throw new MojoFailureException("Can't create " + REGISTRY_INFO_XML, e);
         }
 
-        artifactsList.add(name, version, serverRole, true, RESOURCES_TYPE);
+        artifactsList.add(name, version, serverRole, true, artifactTypes.of(RESOURCES_TYPE).getPriority());
     }
 
     private void createAllInOneRegistryArtifacts() throws IOException, MojoFailureException {
@@ -171,7 +178,8 @@ public final class RegistryArtifactsBuilder extends AbstractArtifactsBuilder<Reg
                 }
             }
 
-            artifactsList.add(allInOneName, version, serverRole, true, RESOURCES_TYPE);
+            artifactsList.add(
+                    allInOneName, version, serverRole, true, artifactTypes.of(RESOURCES_TYPE).getPriority());
         }
     }
 
@@ -220,7 +228,7 @@ public final class RegistryArtifactsBuilder extends AbstractArtifactsBuilder<Reg
             final String xml = new XmlBuilder().node("artifact")
                     .attr("name", name)
                     .attr("version", version)
-                    .attr("type", ArtifactUtils.synapseTypeOf(RESOURCES_TYPE))
+                    .attr("type", artifactTypes.of(RESOURCES_TYPE).getType())
                     .attr("serverRole", serverRole)
                     .node("file").content(REGISTRY_INFO_XML)
                     .builder().asString();
@@ -262,11 +270,11 @@ public final class RegistryArtifactsBuilder extends AbstractArtifactsBuilder<Reg
 
     @Nullable
     private String detectMediaType(final String registryFile) {
-        final String predefined = mediaTypes.get(registryFile);
+        final String predefined = artifactsMediaTypes.get(registryFile);
         if (!StringUtils.isBlank(predefined)) {
             return predefined;
         }
-        return ArtifactUtils.mediaTypeOf(registryFile);
+        return mediaTypes != null ? mediaTypes.of(registryFile).getType() : null;
     }
 
     private String registryFileOf(final Path fromFile) {

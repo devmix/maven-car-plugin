@@ -1,0 +1,23 @@
+{
+  "js": {
+    "type": "application/javascript"
+  },
+  "css": {
+    "type": "text/css"
+  },
+  "html": {
+    "type": "text/html"
+  },
+  "sql": {
+    "type": ""
+  },
+  "xsl": {
+    "type": "application/xsl+xml"
+  },
+  "xslt": {
+    "type": "application/xslt+xml"
+  },
+  "groovy": {
+    "type": "text/x-groovy"
+  }
+}

@@ -1,0 +1,72 @@
+---
+
+# --- 1
+
+registry:
+  priority: 100
+  type: "registry/resource"
+
+# --- 2
+
+local-entries:
+  priority: 200
+  type: "synapse/local-entry"
+
+# --- 3
+
+# lib/synapse/mediator
+
+# --- 4
+
+message-stores:
+  priority: 400
+  type: "synapse/message-store"
+
+# --- 5
+
+# jaggery/app
+# bpel/workflow
+# lib/registry/filter
+# webapp/jaxws
+# lib/library/bundle
+# service/dataservice
+# cep/bucket
+proxy-services:
+  priority: 500
+  type: "synapse/proxy-service"
+# carbon/application
+# lib/dataservice/validator
+endpoints:
+  priority: 501
+  type: "synapse/endpoint"
+# web/application
+# lib/carbon/ui
+# service/axis2
+sequences:
+  priority: 502
+  type: "synapse/sequence"
+# synapse/configuration
+api:
+  priority: 504
+  type: "synapse/api"
+templates:
+  priority: 503
+  type: "synapse/template"
+# synapse/sequenceTemplate
+# synapse/endpointTemplate
+# synapse/event-source
+message-processors:
+  priority: 504
+  type: "synapse/message-processors"
+# synapse/priority-executor
+# wso2/gadget
+# lib/registry/handlers
+# service/rule
+# service/meta
+# jaggery/app
+
+# --- 6
+
+tasks:
+  priority: 600
+  type: "synapse/task"

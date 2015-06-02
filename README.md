@@ -16,7 +16,33 @@ Maven plugin for building Carbon Application Archive (CAR) based on configuratio
  * sequences
  * tasks
  * templates
- 
+
+For adding of new types or change existing it is possible to use external file (YAML, XML, JSON).
+
+Maven configuration:
+```xml
+    <plugin>
+        ...
+        <configuration>
+            <synapseArtifactTypesFile>
+                ${project.basedir}/src/main/resources/synapse-artifact-types.yaml
+            </synapseArtifactTypesFile>
+        </configuration>
+    </plugin>
+```
+
+File synapse-artifact-types.yaml
+```yaml
+---
+registry:
+  priority: 100
+  type: "registry/resource"
+
+local-entries:
+  priority: 200
+  type: "synapse/local-entry"
+```
+
 #### Resources of WSO2 registry :
 
  src/main/resources
@@ -26,6 +52,29 @@ Maven plugin for building Carbon Application Archive (CAR) based on configuratio
    * ...
  * artifacts.list
 
+For adding of new types or change existing it is possible to use external file (YAML, XML, JSON).
+
+Maven configuration:
+```xml
+    <plugin>
+        ...
+        <configuration>
+            <registryMediaTypesFile>
+                ${project.basedir}/src/main/resources/registry-media-types.yaml
+            </registryMediaTypesFile>
+        </configuration>
+    </plugin>
+```
+
+File registry-media-types.yaml
+```yaml
+---
+js:
+  type: "application/javascript"
+
+css:
+  type: "text/css"
+```
 
 #### File artifacts.list
 
@@ -55,7 +104,7 @@ Example:
             <plugin>
                 <groupId>com.github.devmix.esb</groupId>
                 <artifactId>maven-car-plugin</artifactId>
-                <version>1.0.0</version>
+                <version>1.0.2</version>
                 <extensions>true</extensions>
                 <configuration/>
             </plugin>

@@ -1,0 +1,23 @@
+<list>
+    <js>
+        <type>application/javascript</type>
+    </js>
+    <css>
+        <type>text/css</type>
+    </css>
+    <html>
+        <type>text/html</type>
+    </html>
+    <sql>
+        <type/>
+    </sql>
+    <xsl>
+        <type>application/xsl+xml</type>
+    </xsl>
+    <xslt>
+        <type>application/xslt+xml</type>
+    </xslt>
+    <groovy>
+        <type>text/x-groovy</type>
+    </groovy>
+</list>
