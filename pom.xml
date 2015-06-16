@@ -28,7 +28,7 @@
     <groupId>com.github.devmix</groupId>
     <artifactId>maven-car-plugin</artifactId>
     <packaging>maven-plugin</packaging>
-    <version>1.0.3</version>
+    <version>1.0.4-SNAPSHOT</version>
 
     <name>Carbon Application Archive Maven Plugin</name>
     <description>
